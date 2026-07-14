@@ -55,7 +55,6 @@
       <!-- Use the Web Component -->
 	    <video-moq 
 		src="https://example.com/my-moq-stream?namespace=demo" 
-		fingerprint="https://example.com/fingerprint" 
 		width="640" 
 		muted 
 		controls>
@@ -70,6 +69,18 @@
 
     // Play button
     $( "#hls-button" ).click(function( event ) {
+console.log("Playing: " + $( "#manifest" ).val());
+      const videoMoq = document.querySelector("video-moq");
+
+// Set the stream URL and fingerprint dynamically
+videoMoq.setAttribute("src", $( "#manifest" ).val());
+
+// Listen for when the player is ready, then play
+videoMoq.addEventListener("loadeddata", () => {
+    // The component might auto-play depending on its internal logic, 
+    // but you can programmatically trigger play if it exposes the method
+    console.log("Stream data loaded, ready to play.");
+});
       event.preventDefault();
     });
 
