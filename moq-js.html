@@ -7,7 +7,7 @@
     
     <!-- Load moq-js Web Component via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@moq-js/player@latest/dist/moq-player.iife.js"></script>
-    
+ 
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -66,61 +66,13 @@
 
     <h2>MoQ Stream Tester</h2>
 
-    <div class="input-group">
-        <label for="stream-url">MoQ Stream URL:</label>
-        <input type="text" id="stream-url" placeholder="e.g., https://example.com/moq?namespace=demo">
-    </div>
-
-    <div class="input-group">
-        <label for="fingerprint-url">Fingerprint URL (Optional - for self-signed certs):</label>
-        <input type="text" id="fingerprint-url" placeholder="e.g., https://example.com/fingerprint">
-    </div>
-
-    <button id="load-btn">Load & Play Stream</button>
-
-    <div class="player-container" id="player-container">
-        <!-- The video-moq element will be injected here -->
-        <p>No stream loaded</p>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const loadBtn = document.getElementById('load-btn');
-            const container = document.getElementById('player-container');
-            const urlInput = document.getElementById('stream-url');
-            const fingerprintInput = document.getElementById('fingerprint-url');
-
-            loadBtn.addEventListener('click', () => {
-                const streamUrl = urlInput.value.trim();
-                const fingerprintUrl = fingerprintInput.value.trim();
-
-                if (!streamUrl) {
-                    alert("Please enter a valid MoQ Stream URL.");
-                    return;
-                }
-
-                // 1. Clear out the container (removes the previous player or placeholder text)
-                container.innerHTML = '';
-
-                // 2. Create a new instance of the video-moq web component
-                const videoMoq = document.createElement('video-moq');
-                
-                // 3. Set the necessary attributes
-                videoMoq.setAttribute('src', streamUrl);
-                videoMoq.setAttribute('width', '640');
-                videoMoq.setAttribute('controls', '');
-                videoMoq.setAttribute('muted', ''); // Muting is recommended to allow auto-play in browsers
-
-                if (fingerprintUrl) {
-                    videoMoq.setAttribute('fingerprint', fingerprintUrl);
-                }
-
-                // 4. Append to the DOM. 
-                // The component's internal lifecycle will automatically pick up the attributes and attempt to connect.
-                container.appendChild(videoMoq);
-            });
-        });
-    </script>
+<video-moq
+	src="https://interop-relay.cloudflare.mediaoverquic.com:443/bbbthom"
+	fingerprint="https://example.com/fingerprint"
+	width="640"
+	muted
+	controls
+></video-moq>
 
 </body>
 </html>
