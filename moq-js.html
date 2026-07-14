@@ -1,101 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <title>Thom's Players - moq-js</title>
-
-  <!-- Bootstrap -->
-  <link href="css/bootstrap.flatly.min.css" title="default" rel="stylesheet">
-  <link href="css/bootstrap.darkly.min.css" title="dark" rel="stylesheet">
-  <link href="css/ie10-viewport-bug-workaround.css" rel="stylesheet">
-  <link href="css/jumbotron-narrow.css" rel="stylesheet">
-
-  <!-- Style Switcher -->
-  <script src="js/docs-themes.js" type="text/javascript"></script>
-  <script type="text/javascript">set_style();</script>
-
-  <!-- moq-js -->
-  <script src="https://cdn.jsdelivr.net/npm/@moq-js/player@latest/dist/moq-player.iife.js"></script>
-
-  <!-- JQuery -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoQ Stream Tester</title>
+    
+    <!-- Load moq-js Web Component via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@moq-js/player@latest/dist/moq-player.iife.js"></script>
+    
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 20px;
+            color: #333;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+            gap: 8px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+        button:hover {
+            background-color: #004494;
+        }
+        .player-container {
+            background-color: #000;
+            width: 640px;
+            min-height: 360px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        /* Style the custom element slightly to ensure it fills the container if needed */
+        video-moq {
+            display: block;
+            width: 100%;
+        }
+    </style>
 </head>
-
 <body>
 
-  <div class="container">
-    <div class="header clearfix">
-      <nav>
-        <ul class="nav nav-pills pull-right">
-          <li role="presentation"><a href="index.html">Select a Player</a></li>
-          <li role="presentation"><a href="#" onclick='switch_style("dark"); return false;'>Dark</a></li>
-          <li role="presentation"><a href="#" onclick='switch_style("default"); return false;'>Light</a></li>
-        </ul>
-      </nav>
-      <h3 class="text-muted">Thom's Players</h3>
+    <h2>MoQ Stream Tester</h2>
+
+    <div class="input-group">
+        <label for="stream-url">MoQ Stream URL:</label>
+        <input type="text" id="stream-url" placeholder="e.g., https://example.com/moq?namespace=demo">
     </div>
 
-    <div class="jumbotron">
-      <form id="playform">
-        <div class="form-group">
-          <label for="manifest">MOQ URL:</label>
-          <input type="text" class="form-control" id="manifest" name="manifest"><br>
-          <button id="hls-button" type="submit" class="btn btn-primary btn-lg">Play!</button><br><br>
-        </div>
-
-        <button type="button" id="demo" class="btn btn-info btn-sm">Load Demo HLS Manifest</button>
-      </form>
+    <div class="input-group">
+        <label for="fingerprint-url">Fingerprint URL (Optional - for self-signed certs):</label>
+        <input type="text" id="fingerprint-url" placeholder="e.g., https://example.com/fingerprint">
     </div>
 
-    <div class="jumbotron">
-      <!-- Use the Web Component -->
-	    <video-moq 
-		src="https://example.com/my-moq-stream?namespace=demo" 
-		width="640" 
-		muted 
-		controls>
-	    </video-moq>
-    </div>
+    <button id="load-btn">Load & Play Stream</button>
 
-    <div class="jumbotron">
-      <p><small>moq-js Latest</small></p>
+    <div class="player-container" id="player-container">
+        <!-- The video-moq element will be injected here -->
+        <p>No stream loaded</p>
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadBtn = document.getElementById('load-btn');
+            const container = document.getElementById('player-container');
+            const urlInput = document.getElementById('stream-url');
+            const fingerprintInput = document.getElementById('fingerprint-url');
 
-    // Play button
-    $( "#hls-button" ).click(function( event ) {
-console.log("Playing: " + $( "#manifest" ).val());
-      const videoMoq = document.querySelector("video-moq");
+            loadBtn.addEventListener('click', () => {
+                const streamUrl = urlInput.value.trim();
+                const fingerprintUrl = fingerprintInput.value.trim();
 
-// Set the stream URL and fingerprint dynamically
-videoMoq.setAttribute("src", $( "#manifest" ).val());
+                if (!streamUrl) {
+                    alert("Please enter a valid MoQ Stream URL.");
+                    return;
+                }
 
-// Listen for when the player is ready, then play
-videoMoq.addEventListener("loadeddata", () => {
-    // The component might auto-play depending on its internal logic, 
-    // but you can programmatically trigger play if it exposes the method
-    console.log("Stream data loaded, ready to play.");
-});
-      event.preventDefault();
-    });
+                // 1. Clear out the container (removes the previous player or placeholder text)
+                container.innerHTML = '';
 
-    $( "#demo" ).click(function( event ) {
-      event.preventDefault();
-    });
+                // 2. Create a new instance of the video-moq web component
+                const videoMoq = document.createElement('video-moq');
+                
+                // 3. Set the necessary attributes
+                videoMoq.setAttribute('src', streamUrl);
+                videoMoq.setAttribute('width', '640');
+                videoMoq.setAttribute('controls', '');
+                videoMoq.setAttribute('muted', ''); // Muting is recommended to allow auto-play in browsers
 
+                if (fingerprintUrl) {
+                    videoMoq.setAttribute('fingerprint', fingerprintUrl);
+                }
+
+                // 4. Append to the DOM. 
+                // The component's internal lifecycle will automatically pick up the attributes and attempt to connect.
+                container.appendChild(videoMoq);
+            });
+        });
     </script>
 
-    <footer class="footer">
-      <p>&copy; Thom Shutt &amp; <a href="https://github.com/philcluff/phils-players#authors"> The Authors</a> 2023.</p>
-    </footer>
-
-  </div>
-
-  <script src="js/ie10-viewport-bug-workaround.js"></script>
 </body>
 </html>
